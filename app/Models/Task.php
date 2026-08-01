@@ -29,6 +29,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'status' => TaskStatus::class,
     'overdue_notified_at' => 'datetime',
 ])]
+
+#[UseFactory(TaskFactory::class)]
+
 class Task extends Model
 {
     use SoftDeletes;

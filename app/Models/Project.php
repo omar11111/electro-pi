@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Casts([
     'status' => ProjectStatus::class,
 ])]
+
+#[UseFactory(ProjectFactory::class)]
+
 class Project extends Model
 {
     use SoftDeletes;
