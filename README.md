@@ -261,8 +261,17 @@ All errors return JSON with an appropriate HTTP status code:
 
 ## Postman Collection
 
-Import `Task-Management-API.postman_collection.json`. The **Login** request auto-saves the token, and **Create Project** / **Create Task** auto-save their ids into collection variables — so the whole flow can be run top-to-bottom with no manual copy-pasting. Update the `base_url` variable if you're not running on `localhost:8000`.
+Import `Task-Management-API.postman_collection.json`. you can find it in docs directory.
+ The **Login** request auto-saves the token, and **Create Project** / **Create Task** auto-save their ids into collection variables — so the whole flow can be run top-to-bottom with no manual copy-pasting. Update the `base_url` variable if you're not running on `localhost:8000`.
 
+## API Documentation
+
+The API specification is available in the `openapi.yaml` file.you can find it in docs directory
+
+You can import it into any OpenAPI-compatible tool (such as Swagger Editor or Postman) to explore and test all available endpoints.
+
+- **File:** `openapi.yaml`
+- **Format:** OpenAPI 3.0.3
 ---
 
 ## Running with Docker
