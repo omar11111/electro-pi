@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use Database\Factories\TaskFactory;
-use Illuminate\Database\Eloquent\Attributes\Cast;
+use Illuminate\Database\Eloquent\Attributes\Casts;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -23,18 +24,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'status',
     'due_date',
 ])]
-#[Cast([
+#[Casts([
     'due_date' => 'date',
     'priority' => TaskPriority::class,
     'status' => TaskStatus::class,
     'overdue_notified_at' => 'datetime',
 ])]
-
-#[UseFactory(TaskFactory::class)]
-
 class Task extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     public function project(): BelongsTo
     {
