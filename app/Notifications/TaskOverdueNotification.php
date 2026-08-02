@@ -12,9 +12,7 @@ class TaskOverdueNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public readonly Task $task)
-    {
-    }
+    public function __construct(public readonly Task $task) {}
 
     /**
      * @return array<int, string>

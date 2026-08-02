@@ -1,0 +1,22 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+
+    level: 5
+
+    excludePaths:
+        - app/Console/Commands/  # keep if you hit false positives here after installing Larastan; remove once verified clean
+
+    ignoreErrors:
+        # DashboardService reads raw SQL aggregate aliases (total, active,
+        # completed, pending, overdue) off a selectRaw() result. These
+        # column names don't exist on the Project/Task models themselves —
+        # they only exist because of the raw SQL — so no static analyzer
+        # can know their types without a lot of unnecessary ceremony.
+        # This is a deliberate, narrow, and safe exception.
+        -
+            message: '#Access to an undefined property (App\\Models\\Task|Illuminate\\Database\\Eloquent\\Model)::\$(total|active|completed|pending|overdue)#'
+            path: app/Services/DashboardService.php
