@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\ProjectStatus;
 use Database\Factories\ProjectFactory;
-use Illuminate\Database\Eloquent\Attributes\Casts;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
