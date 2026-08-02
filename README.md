@@ -20,7 +20,7 @@ Each user manages their own **Projects**, and each Project contains multiple **T
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url> task-management-api
+git clone <https://github.com/omar11111/electro-pi> task-management-api
 cd task-management-api
 
 # 2. Install dependencies
