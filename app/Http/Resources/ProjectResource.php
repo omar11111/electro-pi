@@ -13,7 +13,7 @@ class ProjectResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'status' => $this->status->value,
+            'status' => $this->status,
             // Only present when the controller did withCount('tasks'),
             // so listing projects never triggers an N+1.
             'tasks_count' => $this->whenCounted('tasks'),

@@ -96,7 +96,7 @@ class ProjectTest extends TestCase
 
         $this->actingAs($user, 'sanctum')
             ->deleteJson("/api/projects/{$project->id}")
-            ->assertNoContent();
+            ->assertOk();
 
         $this->assertSoftDeleted($project);
     }
@@ -109,7 +109,7 @@ class ProjectTest extends TestCase
 
         $this->actingAs($user, 'sanctum')
             ->deleteJson("/api/projects/{$project->id}")
-            ->assertNoContent();
+            ->assertOk();
 
         $this->assertSoftDeleted($task);
     }

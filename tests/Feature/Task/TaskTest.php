@@ -115,7 +115,7 @@ class TaskTest extends TestCase
 
         $this->actingAs($user, 'sanctum')
             ->deleteJson("/api/tasks/{$task->id}")
-            ->assertNoContent();
+            ->assertOk();
 
         $this->assertSoftDeleted($task);
     }

@@ -20,12 +20,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'description',
     'status',
 ])]
-#[Casts([
-    'status' => ProjectStatus::class,
-])]
+
 class Project extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'status' => ProjectStatus::class,
+        ];
+    }
 
     public function user(): BelongsTo
     {

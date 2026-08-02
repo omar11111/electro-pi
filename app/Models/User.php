@@ -23,14 +23,18 @@ use Laravel\Sanctum\HasApiTokens;
     'password',
     'remember_token',
 ])]
-#[Casts([
-    'email_verified_at' => 'datetime',
-    'password' => 'hashed',
-])]
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);

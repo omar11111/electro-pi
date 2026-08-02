@@ -24,15 +24,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'status',
     'due_date',
 ])]
-#[Casts([
-    'due_date' => 'date',
-    'priority' => TaskPriority::class,
-    'status' => TaskStatus::class,
-    'overdue_notified_at' => 'datetime',
-])]
 class Task extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'due_date' => 'date',
+            'priority' => TaskPriority::class,
+            'status' => TaskStatus::class,
+            'overdue_notified_at' => 'datetime',
+        ];
+    }
 
     public function project(): BelongsTo
     {

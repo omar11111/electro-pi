@@ -85,6 +85,13 @@ class AuthenticationTest extends TestCase
             ->postJson('/api/logout')
             ->assertOk();
 
+        // Laravel's auth guard caches the resolved user on the guard
+        // instance, which persists across requests within the SAME test
+        // (same container). A real client never hits this — every real
+        // request is a fresh process. We forget the cached guard here so
+        // the next call actually re-resolves the user from the token.
+        $this->app['auth']->forgetGuards();
+
         // Same token must no longer work after logout.
         $this->withHeader('Authorization', "Bearer {$token}")
             ->getJson('/api/dashboard')
