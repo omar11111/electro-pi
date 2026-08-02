@@ -1,0 +1,472 @@
+openapi: 3.0.3
+info:
+  title: Task Management System API
+  description: >
+    RESTful API for a simple Task Management System — ElectroPi Laravel
+    Mid-Level Technical Assessment. Each user manages their own Projects,
+    and each Project contains multiple Tasks.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/api
+    description: Local development server
+
+tags:
+  - name: Auth
+  - name: Projects
+  - name: Tasks
+  - name: Dashboard
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: "Sanctum personal access token"
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: "Omar Ashraf" }
+        email: { type: string, format: email, example: "demo@example.com" }
+        created_at: { type: string, format: date-time }
+
+    Project:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        name: { type: string, example: "LMS Platform" }
+        description: { type: string, nullable: true, example: "Backend for the LMS portfolio project" }
+        status: { type: string, enum: [active, completed, archived], example: active }
+        tasks_count: { type: integer, nullable: true, example: 8 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Task:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        project_id: { type: integer, example: 1 }
+        title: { type: string, example: "Design database schema" }
+        description: { type: string, nullable: true }
+        priority: { type: string, enum: [low, medium, high], example: high }
+        status: { type: string, enum: [todo, in_progress, done], example: todo }
+        due_date: { type: string, format: date, nullable: true, example: "2026-08-10" }
+        is_overdue: { type: boolean, example: false }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    DashboardStats:
+      type: object
+      properties:
+        total_projects: { type: integer, example: 5 }
+        active_projects: { type: integer, example: 3 }
+        total_tasks: { type: integer, example: 40 }
+        completed_tasks: { type: integer, example: 12 }
+        pending_tasks: { type: integer, example: 28 }
+        overdue_tasks: { type: integer, example: 4 }
+
+    ValidationError:
+      type: object
+      properties:
+        message: { type: string, example: "The given data was invalid." }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+
+  responses:
+    Unauthenticated:
+      description: Missing, invalid, or revoked token
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: "Unauthenticated." }
+    Forbidden:
+      description: Authenticated, but not the owner of this resource
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: "This action is unauthorized." }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { message: "The requested resource was not found." }
+    ValidationFailed:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationError' }
+
+paths:
+  /register:
+    post:
+      tags: [Auth]
+      summary: Register a new account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation]
+              properties:
+                name: { type: string, example: "Omar Ashraf" }
+                email: { type: string, format: email, example: "omar@example.com" }
+                password: { type: string, format: password, example: "password123" }
+                password_confirmation: { type: string, format: password, example: "password123" }
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  token: { type: string, example: "1|xxxxxxxxxxxxxxxxxxxx" }
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+
+  /login:
+    post:
+      tags: [Auth]
+      summary: Log in and receive an API token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: "demo@example.com" }
+                password: { type: string, format: password, example: "password" }
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+                  token: { type: string }
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+
+  /logout:
+    post:
+      tags: [Auth]
+      summary: Revoke the current access token
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string, example: "Logged out successfully." }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+
+  /projects:
+    get:
+      tags: [Projects]
+      summary: List the authenticated user's projects
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 15, maximum: 100 }
+      responses:
+        '200':
+          description: Paginated list of projects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Project' }
+                  links: { type: object }
+                  meta: { type: object }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+    post:
+      tags: [Projects]
+      summary: Create a project
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, example: "LMS Platform" }
+                description: { type: string, nullable: true }
+                status: { type: string, enum: [active, completed, archived] }
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Project' }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+
+  /projects/{project}:
+    parameters:
+      - name: project
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Projects]
+      summary: View a single project
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Project details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Project' }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Projects]
+      summary: Update a project
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                description: { type: string, nullable: true }
+                status: { type: string, enum: [active, completed, archived] }
+      responses:
+        '200':
+          description: Project updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Project' }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+    delete:
+      tags: [Projects]
+      summary: Soft-delete a project (cascades to its tasks)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Deleted, no content
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /projects/{project}/tasks:
+    parameters:
+      - name: project
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Tasks]
+      summary: List tasks in a project, with optional filters
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [todo, in_progress, done] }
+        - name: priority
+          in: query
+          schema: { type: string, enum: [low, medium, high] }
+        - name: search
+          in: query
+          description: Partial match against the task title
+          schema: { type: string }
+        - name: per_page
+          in: query
+          schema: { type: integer, default: 15, maximum: 100 }
+      responses:
+        '200':
+          description: Paginated list of tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Task' }
+                  links: { type: object }
+                  meta: { type: object }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          description: Invalid filter value (e.g. an unknown status)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ValidationError' }
+    post:
+      tags: [Tasks]
+      summary: Create a task under this project
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, example: "Design database schema" }
+                description: { type: string, nullable: true }
+                priority: { type: string, enum: [low, medium, high] }
+                status: { type: string, enum: [todo, in_progress, done] }
+                due_date: { type: string, format: date, nullable: true, example: "2026-08-10" }
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+
+  /tasks/{task}:
+    parameters:
+      - name: task
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Tasks]
+      summary: View a single task
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Tasks]
+      summary: Update a task
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string, nullable: true }
+                priority: { type: string, enum: [low, medium, high] }
+                status: { type: string, enum: [todo, in_progress, done] }
+                due_date: { type: string, format: date, nullable: true }
+      responses:
+        '200':
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Task' }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+    delete:
+      tags: [Tasks]
+      summary: Soft-delete a task
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Deleted, no content
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Aggregate stats for the authenticated user
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Dashboard stats
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DashboardStats' }
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
